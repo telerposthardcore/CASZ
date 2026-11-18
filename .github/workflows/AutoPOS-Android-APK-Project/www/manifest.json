@@ -1,0 +1,10 @@
+{
+  "name": "AutoPOS - Kasir Cuci Mobil & Bengkel",
+  "short_name": "AutoPOS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#f97316",
+  "orientation": "any",
+  "icons": []
+}

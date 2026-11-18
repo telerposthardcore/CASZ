@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.json" />
+  <title>AutoPOS - Kasir Cuci Mobil & Bengkel</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-2: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #f97316;
+      --primary-hover: #ea580c;
+      --success: #10b981;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-badge {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .brand h1 { margin: 0; font-size: 17px; }
+    .brand small { color: var(--muted); display: block; font-size: 11px; }
+    nav {
+      display: flex;
+      gap: 6px;
+      background: var(--surface);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    nav button {
+      background: var(--surface-2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    nav button.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    main { flex: 1; padding: 14px; max-width: 1400px; width: 100%; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .pos-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .pos-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .card h2, .card h3 { margin: 0 0 12px 0; font-size: 15px; color: #fff; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 11px;
+      border-radius: 9px;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    .plate-input {
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 16px;
+      border-color: var(--primary);
+    }
+    .loyalty-banner {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      font-size: 12px;
+      display: none;
+    }
+    .loyalty-banner.free-ready {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: var(--success);
+    }
+    .cat-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-pills button {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .cat-pills button.active { background: var(--info); border-color: var(--info); font-weight: 700; }
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 10px;
+    }
+    .service-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .service-item:active { transform: scale(0.97); }
+    .service-item:hover { border-color: var(--primary); }
+    .service-cat { font-size: 10px; color: var(--primary); font-weight: 700; text-transform: uppercase; }
+    .service-name { font-size: 13px; font-weight: 700; margin: 4px 0 8px 0; }
+    .service-price { font-size: 14px; font-weight: 800; color: var(--success); }
+    .cart-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+    .cart-row {
+      background: var(--surface-2);
+      padding: 9px 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .qty-ctrl { display: flex; align-items: center; gap: 6px; }
+    .qty-ctrl button {
+      width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--surface); color: #fff; font-weight: 700; cursor: pointer;
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-info { background: var(--info); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-block { width: 100%; }
+    .summary-box {
+      border-top: 1px dashed var(--border);
+      margin-top: 12px;
+      padding-top: 12px;
+      font-size: 13px;
+    }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .summary-total { font-size: 18px; font-weight: 800; color: var(--primary); }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .stat-card span { font-size: 12px; color: var(--muted); }
+    .stat-card strong { display: block; font-size: 20px; margin-top: 4px; color: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+    .badge {
+      padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    }
+    .badge-ok { background: rgba(16,185,129,0.2); color: #34d399; }
+    .badge-warn { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    /* Modal Receipt */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .receipt-box {
+      background: #fff; color: #111; width: 100%; max-width: 340px;
+      border-radius: 12px; padding: 16px; font-family: "Courier New", monospace; font-size: 12px;
+    }
+    .receipt-box h3 { text-align: center; margin: 0 0 4px 0; font-size: 15px; }
+    .receipt-divider { border-top: 1px dashed #333; margin: 8px 0; }
+    @media print {
+      body * { visibility: hidden; }
+      #receiptModal, #receiptModal * { visibility: visible; }
+      #receiptModal { position: fixed; inset: 0; background: #fff; display: block !important; padding: 0; }
+      .no-print { display: none !important; }
+      .receipt-box { box-shadow: none; max-width: 100%; width: 58mm; padding: 2mm; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge">AutoPOS</div>
+      <div>
+        <h1 id="headerShopName">AutoWash & Garage</h1>
+        <small id="headerShopSub">Kasir Cuci Mobil, Detailing & Bengkel</small>
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="toggleFullscreen()" title="Layar Penuh Tablet/Head Unit">⛶ Fullscreen</button>
+  </header>
+
+  <nav>
+    <button class="active" onclick="switchTab('pos', this)">🧾 Kasir</button>
+    <button onclick="switchTab('history', this)">📋 Riwayat & Pengingat KM</button>
+    <button onclick="switchTab('report', this)">📊 Laporan & Komisi</button>
+    <button onclick="switchTab('settings', this)">⚙️ Layanan & Pengaturan</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: POS / KASIR -->
+    <section id="tab-pos" class="tab-content active">
+      <div class="pos-grid">
+        <div>
+          <div class="card">
+            <h2>1. Data Kendaraan & Pelanggan</h2>
+            <div class="form-grid">
+              <div>
+                <label>Plat Nomor *</label>
+                <input type="text" id="plateInput" class="plate-input" placeholder="DK 1234 AB" oninput="checkPlateHistory()" />
+              </div>
+              <div>
+                <label>Jenis Kendaraan</label>
+                <select id="vehicleType">
+                  <option value="City Car / Sedan">City Car / Sedan</option>
+                  <option value="MPV / SUV">MPV / SUV</option>
+                  <option value="Motor">Motor</option>
+                  <option value="Pick Up / Box">Pick Up / Box</option>
+                </select>
+              </div>
+              <div>
+                <label>Nama Pelanggan</label>
+                <input type="text" id="custName" placeholder="Budi / Umum" />
+              </div>
+              <div>
+                <label>No. WhatsApp (untuk Struk/Reminder)</label>
+                <input type="tel" id="custPhone" placeholder="08123456789" />
+              </div>
+              <div>
+                <label>Odometer / KM Sekarang</label>
+                <input type="number" id="currentKm" placeholder="45000" oninput="autoCalcNextKm()" />
+              </div>
+              <div>
+                <label>Jadwal Servis Berikutnya (KM)</label>
+                <input type="number" id="nextKm" placeholder="50000" />
+              </div>
+              <div>
+                <label>Mekanik / Tim Cuci</label>
+                <select id="staffSelect"></select>
+              </div>
+              <div>
+                <label>Catatan Kondisi Mobil</label>
+                <input type="text" id="vehicleNote" placeholder="Baret bumper kiri, dll" />
+              </div>
+            </div>
+            <div id="loyaltyBanner" class="loyalty-banner"></div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h2 style="margin:0;">2. Pilih Layanan / Sparepart</h2>
+              <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="addCustomItem()">+ Item Manual</button>
+            </div>
+            <div class="cat-pills" id="categoryPills"></div>
+            <div class="service-grid" id="serviceGrid"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h2>3. Keranjang & Pembayaran</h2>
+            <div id="cartList" class="cart-list">
+              <p style="color:var(--muted);text-align:center;padding:20px 0;">Belum ada layanan dipilih.</p>
+            </div>
+
+            <div class="summary-box">
+              <div class="form-grid" style="margin-bottom:10px;">
+                <div>
+                  <label>Diskon / Potongan (Rp)</label>
+                  <input type="number" id="discountInput" value="0" min="0" oninput="renderCart()" />
+                </div>
+                <div>
+                  <label>Metode Pembayaran</label>
+                  <select id="payMethod">
+                    <option value="Tunai">Tunai (Cash)</option>
+                    <option value="QRIS">QRIS</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
+                    <option value="Kartu Debit/Kredit">Kartu Debit/Kredit</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Uang Diterima (Rp)</label>
+                  <input type="number" id="cashPaid" placeholder="0" oninput="renderCart()" />
+                </div>
+              </div>
+
+              <div class="summary-line"><span>Subtotal</span><strong id="subTotalText">Rp 0</strong></div>
+              <div class="summary-line"><span>Diskon</span><strong id="discountText">Rp 0</strong></div>
+              <div class="summary-line summary-total"><span>TOTAL BAYAR</span><span id="grandTotalText">Rp 0</span></div>
+              <div class="summary-line"><span>Kembalian</span><strong id="changeText" style="color:var(--success);">Rp 0</strong></div>
+
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-outline" style="flex:1;" onclick="clearCart()">Reset</button>
+                <button class="btn btn-primary" style="flex:2;" onclick="checkout()">✅ Simpan & Cetak Struk</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: HISTORY & REMINDERS -->
+    <section id="tab-history" class="tab-content">
+      <div class="card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;">
+          <h2 style="margin:0;">Riwayat Transaksi & Pengingat Ganti Oli / Servis</h2>
+          <input type="text" id="searchHistory" style="max-width:260px;" placeholder="Cari Plat Nomor / Nama..." oninput="renderHistory()" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Plat & Kendaraan</th>
+                <th>Layanan</th>
+                <th>Mekanik</th>
+                <th>KM / Next Servis</th>
+                <th>Total</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: REPORTS & COMMISSIONS -->
+    <section id="tab-report" class="tab-content">
+      <div class="stat-grid">
+        <div class="stat-card"><span>Omzet Hari Ini</span><strong id="statTodayRev">Rp 0</strong></div>
+        <div class="stat-card"><span>Transaksi Hari Ini</span><strong id="statTodayCount">0</strong></div>
+        <div class="stat-card"><span>Total Semua Omzet</span><strong id="statAllRev">Rp 0</strong></div>
+        <div class="stat-card"><span>Total Komisi Mekanik</span><strong id="statTotalComm">Rp 0</strong></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h2 style="margin:0;">Rekap Komisi Mekanik / Tim Cuci</h2>
+          <button class="btn btn-success" onclick="exportCSV()">📥 Export CSV (Excel)</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nama Mekanik / Pencuci</th>
+              <th>Persentase Komisi</th>
+              <th>Jumlah Pekerjaan</th>
+              <th>Total Omzet Dikerjakan</th>
+              <th>Total Komisi Diterima</th>
+            </tr>
+          </thead>
+          <tbody id="commissionBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: SETTINGS & CATALOG -->
+    <section id="tab-settings" class="tab-content">
+      <div class="pos-grid">
+        <div class="card">
+          <h2>Profil Usaha & Loyalty Program</h2>
+          <div class="form-grid">
+            <div>
+              <label>Nama Bengkel / Carwash</label>
+              <input type="text" id="setShopName" />
+            </div>
+            <div>
+              <label>Alamat / Subjudul Struk</label>
+              <input type="text" id="setShopSub" />
+            </div>
+            <div>
+              <label>Target Cuci Gratis 1x (Jumlah Kunjungan)</label>
+              <input type="number" id="setLoyaltyTarget" min="2" max="20" />
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="saveSettings()">Simpan Pengaturan</button>
+
+          <hr style="border-color:var(--border);margin:18px 0;" />
+          <h3>Backup & Restore Data Lokal</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-info" onclick="backupJSON()">💾 Download Backup (.json)</button>
+            <label class="btn btn-outline" style="cursor:pointer;margin:0;">
+              📂 Restore Backup
+              <input type="file" accept=".json" style="display:none;" onchange="restoreJSON(event)" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Tambah Layanan / Sparepart Baru</h2>
+          <div class="form-grid">
+            <div>
+              <label>Nama Layanan / Barang</label>
+              <input type="text" id="newSvcName" placeholder="Cuci Salju + Wax" />
+            </div>
+            <div>
+              <label>Kategori</label>
+              <select id="newSvcCat">
+                <option value="Cuci">Cuci</option>
+                <option value="Detailing">Detailing</option>
+                <option value="Servis & Oli">Servis & Oli</option>
+                <option value="Sparepart">Sparepart</option>
+              </select>
+            </div>
+            <div>
+              <label>Harga (Rp)</label>
+              <input type="number" id="newSvcPrice" placeholder="50000" />
+            </div>
+          </div>
+          <button class="btn btn-success" style="margin-top:10px;" onclick="addService()">+ Tambah Layanan</button>
+
+          <hr style="border-color:var(--border);margin:18px 0;" />
+          <h2>Tambah Mekanik / Pencuci</h2>
+          <div class="form-grid">
+            <div>
+              <label>Nama Mekanik / Tim</label>
+              <input type="text" id="newStaffName" placeholder="Andi / Tim A" />
+            </div>
+            <div>
+              <label>Komisi (%)</label>
+              <input type="number" id="newStaffComm" placeholder="30" min="0" max="100" />
+            </div>
+          </div>
+          <button class="btn btn-info" style="margin-top:10px;" onclick="addStaff()">+ Tambah Mekanik</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- RECEIPT MODAL -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="receipt-box">
+      <div id="receiptContent"></div>
+      <div class="no-print" style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak Struk Thermal</button>
+        <button class="btn btn-success" id="waShareBtn">📲 Kirim Struk & Reminder ke WhatsApp</button>
+        <button class="btn btn-outline" style="color:#111;border-color:#ccc;" onclick="closeReceipt()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_DATA = {
+      settings: {
+        shopName: "AutoWash & Garage",
+        shopSub: "Jl. Raya Otomotif No. 88 • Telp 0812-0000-8888",
+        loyaltyTarget: 5
+      },
+      services: [
+        { id: 1, name: "Cuci Mobil Reguler", cat: "Cuci", price: 45000 },
+        { id: 2, name: "Cuci Salju + Vacuum", cat: "Cuci", price: 65000 },
+        { id: 3, name: "Cuci Hidrolik Kolong", cat: "Cuci", price: 80000 },
+        { id: 4, name: "Cuci Motor Premium", cat: "Cuci", price: 20000 },
+        { id: 5, name: "Salon Interior & Jok", cat: "Detailing", price: 350000 },
+        { id: 6, name: "Poles Bodi & Jamur Kaca", cat: "Detailing", price: 450000 },
+        { id: 7, name: "Ganti Oli Mesin 4L + Filter", cat: "Servis & Oli", price: 420000 },
+        { id: 8, name: "Tune Up & Cek Rem", cat: "Servis & Oli", price: 250000 },
+        { id: 9, name: "Spooring & Balancing", cat: "Servis & Oli", price: 200000 },
+        { id: 10, name: "Wiper Blade Sepasang", cat: "Sparepart", price: 120000 }
+      ],
+      staff: [
+        { id: 1, name: "Tim Cuci A", comm: 30 },
+        { id: 2, name: "Mekanik Budi", comm: 25 },
+        { id: 3, name: "Mekanik Rian", comm: 25 }
+      ],
+      transactions: []
+    };
+
+    let db = JSON.parse(localStorage.getItem("autopos_db_v1")) || DEFAULT_DATA;
+    let cart = [];
+    let selectedCat = "Semua";
+    let lastReceiptTx = null;
+
+    function saveDB() {
+      localStorage.setItem("autopos_db_v1", JSON.stringify(db));
+    }
+
+    function rp(num) {
+      return "Rp " + (Number(num) || 0).toLocaleString("id-ID");
+    }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      document.getElementById("tab-" + tab).classList.add("active");
+      btn.classList.add("active");
+      if (tab === "history") renderHistory();
+      if (tab === "report") renderReport();
+      if (tab === "settings") loadSettingsForm();
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function renderInit() {
+      document.getElementById("headerShopName").textContent = db.settings.shopName;
+      document.getElementById("headerShopSub").textContent = db.settings.shopSub;
+      const staffSel = document.getElementById("staffSelect");
+      staffSel.innerHTML = db.staff.map(s => `<option value="${s.id}">${s.name} (Komisi ${s.comm}%)</option>`).join("");
+      renderCategories();
+      renderServices();
+      renderCart();
+    }
+
+    function renderCategories() {
+      const cats = ["Semua", ...new Set(db.services.map(s => s.cat))];
+      document.getElementById("categoryPills").innerHTML = cats.map(c =>
+        `<button class="${c === selectedCat ? 'active' : ''}" onclick="setCat('${c}')">${c}</button>`
+      ).join("");
+    }
+
+    function setCat(c) {
+      selectedCat = c;
+      renderCategories();
+      renderServices();
+    }
+
+    function renderServices() {
+      const list = selectedCat === "Semua" ? db.services : db.services.filter(s => s.cat === selectedCat);
+      document.getElementById("serviceGrid").innerHTML = list.map(s => `
+        <div class="service-item" onclick="addToCart(${s.id})">
+          <div>
+            <div class="service-cat">${s.cat}</div>
+            <div class="service-name">${s.name}</div>
+          </div>
+          <div class="service-price">${rp(s.price)}</div>
+        </div>
+      `).join("");
+    }
+
+    function addToCart(id) {
+      const svc = db.services.find(s => s.id === id);
+      if (!svc) return;
+      const existing = cart.find(c => c.id === id);
+      if (existing) existing.qty += 1;
+      else cart.push({ id: svc.id, name: svc.name, price: svc.price, qty: 1 });
+      renderCart();
+    }
+
+    function addCustomItem() {
+      const name = prompt("Nama layanan / sparepart tambahan:");
+      if (!name) return;
+      const price = Number(prompt("Harga (Rp):", "50000"));
+      if (isNaN(price) || price < 0) return;
+      cart.push({ id: Date.now(), name, price, qty: 1 });
+      renderCart();
+    }
+
+    function updateQty(idx, delta) {
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      renderCart();
+    }
+
+    function renderCart() {
+      const box = document.getElementById("cartList");
+      if (cart.length === 0) {
+        box.innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px 0;">Belum ada layanan dipilih.</p>`;
+      } else {
+        box.innerHTML = cart.map((item, idx) => `
+          <div class="cart-row">
+            <div>
+              <div style="font-weight:700;font-size:13px;">${item.name}</div>
+              <div style="font-size:12px;color:var(--muted);">${rp(item.price)} x ${item.qty}</div>
+            </div>
+            <div class="qty-ctrl">
+              <button onclick="updateQty(${idx}, -1)">-</button>
+              <span>${item.qty}</span>
+              <button onclick="updateQty(${idx}, 1)">+</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const discount = Math.max(0, Number(document.getElementById("discountInput").value) || 0);
+      const grandTotal = Math.max(0, subtotal - discount);
+      const cashPaid = Number(document.getElementById("cashPaid").value) || 0;
+      const change = cashPaid > 0 ? Math.max(0, cashPaid - grandTotal) : 0;
+
+      document.getElementById("subTotalText").textContent = rp(subtotal);
+      document.getElementById("discountText").textContent = rp(discount);
+      document.getElementById("grandTotalText").textContent = rp(grandTotal);
+      document.getElementById("changeText").textContent = rp(change);
+    }
+
+    function autoCalcNextKm() {
+      const cur = Number(document.getElementById("currentKm").value);
+      if (cur > 0) document.getElementById("nextKm").value = cur + 5000;
+    }
+
+    function checkPlateHistory() {
+      const plate = document.getElementById("plateInput").value.trim().toUpperCase();
+      const banner = document.getElementById("loyaltyBanner");
+      if (plate.length < 4) { banner.style.display = "none"; return; }
+
+      const past = db.transactions.filter(t => t.plate === plate);
+      const target = Number(db.settings.loyaltyTarget) || 5;
+      const count = past.length;
+      const mod = count % target;
+
+      if (count > 0) {
+        const last = past[0];
+        if (!document.getElementById("custName").value && last.custName) document.getElementById("custName").value = last.custName;
+        if (!document.getElementById("custPhone").value && last.custPhone) document.getElementById("custPhone").value = last.custPhone;
+        banner.style.display = "block";
+        if (mod === target - 1) {
+          banner.classList.add("free-ready");
+          banner.innerHTML = `🎉 <strong>BONUS LOYALTY AKTIF!</strong> Kendaraan <b>${plate}</b> sudah ${count}x transaksi. Transaksi ini berhak mendapat <b>GRATIS CUCI / DISKON LOYALTY</b>!`;
+        } else {
+          banner.classList.remove("free-ready");
+          banner.innerHTML = `⭐ Riwayat <b>${plate}</b>: ${count}x kunjungan (Stamp ${mod + 1}/${target}). KM terakhir tercatat: ${last.currentKm || "-"} km.`;
+        }
+      } else {
+        banner.style.display = "block";
+        banner.classList.remove("free-ready");
+        banner.innerHTML = `🆕 Pelanggan baru <b>${plate}</b> — Stamp Loyalty 1/${target}.`;
+      }
+    }
+
+    function clearCart() {
+      cart = [];
+      document.getElementById("discountInput").value = 0;
+      document.getElementById("cashPaid").value = "";
+      document.getElementById("vehicleNote").value = "";
+      renderCart();
+    }
+
+    function checkout() {
+      if (cart.length === 0) return alert("Pilih minimal 1 layanan terlebih dahulu!");
+      const plate = document.getElementById("plateInput").value.trim().toUpperCase() || "TANPA-PLAT";
+      const staffId = Number(document.getElementById("staffSelect").value);
+      const staffObj = db.staff.find(s => s.id === staffId) || { name: "-", comm: 0 };
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const discount = Math.max(0, Number(document.getElementById("discountInput").value) || 0);
+      const grandTotal = Math.max(0, subtotal - discount);
+      const commissionAmount = Math.round(grandTotal * (staffObj.comm / 100));
+
+      const tx = {
+        id: "TRX-" + Date.now().toString().slice(-6),
+        date: new Date().toISOString(),
+        plate,
+        vehicleType: document.getElementById("vehicleType").value,
+        custName: document.getElementById("custName").value.trim() || "Pelanggan Umum",
+        custPhone: document.getElementById("custPhone").value.trim(),
+        currentKm: document.getElementById("currentKm").value,
+        nextKm: document.getElementById("nextKm").value,
+        note: document.getElementById("vehicleNote").value.trim(),
+        staffId: staffObj.id,
+        staffName: staffObj.name,
+        commissionAmount,
+        payMethod: document.getElementById("payMethod").value,
+        items: [...cart],
+        subtotal,
+        discount,
+        grandTotal
+      };
+
+      db.transactions.unshift(tx);
+      saveDB();
+      showReceipt(tx);
+      clearCart();
+      document.getElementById("plateInput").value = "";
+      document.getElementById("custName").value = "";
+      document.getElementById("custPhone").value = "";
+      document.getElementById("currentKm").value = "";
+      document.getElementById("nextKm").value = "";
+      document.getElementById("loyaltyBanner").style.display = "none";
+    }
+
+    function showReceipt(tx) {
+      lastReceiptTx = tx;
+      const dt = new Date(tx.date).toLocaleString("id-ID");
+      const itemsHtml = tx.items.map(i =>
+        `<div style="display:flex;justify-content:space-between;"><span>${i.name} x${i.qty}</span><span>${rp(i.price * i.qty)}</span></div>`
+      ).join("");
+
+      document.getElementById("receiptContent").innerHTML = `
+        <h3>${db.settings.shopName}</h3>
+        <div style="text-align:center;font-size:11px;">${db.settings.shopSub}</div>
+        <div class="receipt-divider"></div>
+        <div>No: ${tx.id}</div>
+        <div>Tgl: ${dt}</div>
+        <div>Plat: <b>${tx.plate}</b> (${tx.vehicleType})</div>
+        <div>Pelanggan: ${tx.custName}</div>
+        <div>Petugas: ${tx.staffName}</div>
+        ${tx.currentKm ? `<div>KM Sekarang: ${tx.currentKm} km</div>` : ""}
+        ${tx.nextKm ? `<div>Servis Berikutnya: <b>${tx.nextKm} km</b></div>` : ""}
+        <div class="receipt-divider"></div>
+        ${itemsHtml}
+        <div class="receipt-divider"></div>
+        <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${rp(tx.subtotal)}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Diskon</span><span>${rp(tx.discount)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;"><span>TOTAL (${tx.payMethod})</span><span>${rp(tx.grandTotal)}</span></div>
+        <div class="receipt-divider"></div>
+        <div style="text-align:center;font-size:11px;">Terima kasih atas kunjungan Anda!</div>
+      `;
+
+      document.getElementById("waShareBtn").onclick = () => sendWhatsApp(tx);
+      document.getElementById("receiptModal").classList.add("open");
+    }
+
+    function closeReceipt() {
+      document.getElementById("receiptModal").classList.remove("open");
+    }
+
+    function sendWhatsApp(tx) {
+      let phone = (tx.custPhone || "").replace(/[^0-9]/g, "");
+      if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+      const lines = tx.items.map(i => `- ${i.name} (${i.qty}x): ${rp(i.price * i.qty)}`).join("%0A");
+      const kmInfo = tx.nextKm ? `%0A🛠️ *Jadwal Servis/Ganti Oli Berikutnya:* ${tx.nextKm} km` : "";
+      const msg = `*STRUK DIGITAL - ${db.settings.shopName}*%0ANo: ${tx.id}%0APlat: *${tx.plate}* (${tx.vehicleType})%0A%0A*Rincian:*%0A${lines}%0A%0A*Total Bayar:* ${rp(tx.grandTotal)} (${tx.payMethod})${kmInfo}%0A%0ATerima kasih!`;
+      const url = phone ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+      window.open(url, "_blank");
+    }
+
+    function renderHistory() {
+      const q = (document.getElementById("searchHistory").value || "").toLowerCase();
+      const filtered = db.transactions.filter(t =>
+        t.plate.toLowerCase().includes(q) || t.custName.toLowerCase().includes(q)
+      );
+      document.getElementById("historyBody").innerHTML = filtered.map((t, idx) => `
+        <tr>
+          <td>${new Date(t.date).toLocaleDateString("id-ID")}</td>
+          <td><strong>${t.plate}</strong><br/><small style="color:var(--muted)">${t.custName} • ${t.vehicleType}</small></td>
+          <td>${t.items.map(i => i.name).join(", ")}</td>
+          <td>${t.staffName}</td>
+          <td>${t.currentKm ? t.currentKm + " km" : "-"} ${t.nextKm ? `<br/><span class="badge badge-warn">Next: ${t.nextKm} km</span>` : ""}</td>
+          <td><strong>${rp(t.grandTotal)}</strong></td>
+          <td>
+            <button class="btn btn-outline" style="padding:5px 8px;font-size:11px;" onclick='showReceipt(${JSON.stringify(t)})'>Struk</button>
+            <button class="btn btn-success" style="padding:5px 8px;font-size:11px;" onclick='sendWhatsApp(${JSON.stringify(t)})'>WA</button>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="7" style="text-align:center;color:var(--muted);">Belum ada data transaksi.</td></tr>`;
+    }
+
+    function renderReport() {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayTx = db.transactions.filter(t => t.date.slice(0, 10) === todayStr);
+      const todayRev = todayTx.reduce((s, t) => s + t.grandTotal, 0);
+      const allRev = db.transactions.reduce((s, t) => s + t.grandTotal, 0);
+      const allComm = db.transactions.reduce((s, t) => s + (t.commissionAmount || 0), 0);
+
+      document.getElementById("statTodayRev").textContent = rp(todayRev);
+      document.getElementById("statTodayCount").textContent = todayTx.length + " Mobil/Motor";
+      document.getElementById("statAllRev").textContent = rp(allRev);
+      document.getElementById("statTotalComm").textContent = rp(allComm);
+
+      document.getElementById("commissionBody").innerHTML = db.staff.map(st => {
+        const stTx = db.transactions.filter(t => t.staffId === st.id);
+        const stRev = stTx.reduce((s, t) => s + t.grandTotal, 0);
+        const stComm = stTx.reduce((s, t) => s + (t.commissionAmount || 0), 0);
+        return `
+          <tr>
+            <td><strong>${st.name}</strong></td>
+            <td>${st.comm}%</td>
+            <td>${stTx.length}x</td>
+            <td>${rp(stRev)}</td>
+            <td><strong style="color:var(--success);">${rp(stComm)}</strong></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function exportCSV() {
+      const rows = [["ID", "Tanggal", "Plat", "Kendaraan", "Pelanggan", "Mekanik", "Total", "Komisi", "Metode"]];
+      db.transactions.forEach(t => {
+        rows.push([t.id, t.date, t.plate, t.vehicleType, t.custName, t.staffName, t.grandTotal, t.commissionAmount, t.payMethod]);
+      });
+      const csv = rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "Laporan-AutoPOS.csv";
+      a.click();
+    }
+
+    function loadSettingsForm() {
+      document.getElementById("setShopName").value = db.settings.shopName;
+      document.getElementById("setShopSub").value = db.settings.shopSub;
+      document.getElementById("setLoyaltyTarget").value = db.settings.loyaltyTarget || 5;
+    }
+
+    function saveSettings() {
+      db.settings.shopName = document.getElementById("setShopName").value || "AutoWash & Garage";
+      db.settings.shopSub = document.getElementById("setShopSub").value || "";
+      db.settings.loyaltyTarget = Number(document.getElementById("setLoyaltyTarget").value) || 5;
+      saveDB();
+      renderInit();
+      alert("Pengaturan berhasil disimpan!");
+    }
+
+    function addService() {
+      const name = document.getElementById("newSvcName").value.trim();
+      const cat = document.getElementById("newSvcCat").value;
+      const price = Number(document.getElementById("newSvcPrice").value);
+      if (!name || isNaN(price)) return alert("Isi nama layanan dan harga!");
+      db.services.push({ id: Date.now(), name, cat, price });
+      saveDB();
+      document.getElementById("newSvcName").value = "";
+      document.getElementById("newSvcPrice").value = "";
+      renderInit();
+      alert("Layanan berhasil ditambahkan!");
+    }
+
+    function addStaff() {
+      const name = document.getElementById("newStaffName").value.trim();
+      const comm = Number(document.getElementById("newStaffComm").value);
+      if (!name || isNaN(comm)) return alert("Isi nama mekanik dan persentase komisi!");
+      db.staff.push({ id: Date.now(), name, comm });
+      saveDB();
+      document.getElementById("newStaffName").value = "";
+      document.getElementById("newStaffComm").value = "";
+      renderInit();
+      alert("Mekanik berhasil ditambahkan!");
+    }
+
+    function backupJSON() {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "Backup-AutoPOS.json";
+      a.click();
+    }
+
+    function restoreJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          db = JSON.parse(ev.target.result);
+          saveDB();
+          renderInit();
+          alert("Data berhasil dipulihkan!");
+        } catch {
+          alert("File backup tidak valid.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+    renderInit();
+  </script>
+</body>
+</html>
